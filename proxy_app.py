@@ -56,8 +56,12 @@ def get_full_url(path: str) -> str:
 async def proxy_get(request: fastapi.Request, path: str) -> fastapi.Response:
     """Proxy GET requests."""
 
+    IMAGE_EXTENSIONS = (".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg", ".ico", ".bmp", ".tiff", ".tif", ".heic", ".heif")
 
-    path = get_full_url(path)
+    if path.endswith(IMAGE_EXTENSIONS):
+        path = f"https://i.imgur.com/{path}"
+
+    # path = get_full_url(path)
 
     #path = path.removeprefix("https://")
     #path = path.removeprefix("http://")
