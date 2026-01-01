@@ -45,34 +45,34 @@ def extract_target_url(path: str) -> str:
 ################################################################################
 
 
+def get_full_url(path: str) -> str:
+    if path.startswith("https://") or path.startswith("http://"):
+        return path
+    else:
+        return f"https://{path}"
+
+
 @app.get("/{path:path}")
-async def proxy_get(request: fastapi.Request, path: str):
+async def proxy_get(request: fastapi.Request, path: str) -> fastapi.Response:
     """Proxy GET requests."""
-    return await proxy_request(request, path)
 
 
-@app.post("/{path:path}")
-async def proxy_post(request: fastapi.Request, path: str):
-    """Proxy POST requests."""
-    return await proxy_request(request, path)
+    path = get_full_url(path)
 
+    #path = path.removeprefix("https://")
+    #path = path.removeprefix("http://")
+    #path = f"https://{path}"
 
-@app.put("/{path:path}")
-async def proxy_put(request: fastapi.Request, path: str):
-    """Proxy PUT requests."""
-    return await proxy_request(request, path)
+    url = f"https://proxy.duckduckgo.com/iu/?u={path}"
+    print("--------------------------------")
+    print(path, "->", url)
+    print("--------------------------------")
 
+    async with httpx.AsyncClient(timeout=30.0, follow_redirects=True) as client:
+        response = await client.get(url)
+        return fastapi.Response(content=response.content, status_code=response.status_code, headers=response.headers)
+    # return await proxy_request(request, path)
 
-@app.delete("/{path:path}")
-async def proxy_delete(request: fastapi.Request, path: str):
-    """Proxy DELETE requests."""
-    return await proxy_request(request, path)
-
-
-@app.patch("/{path:path}")
-async def proxy_patch(request: fastapi.Request, path: str):
-    """Proxy PATCH requests."""
-    return await proxy_request(request, path)
 
 
 async def proxy_request(request: fastapi.Request, path: str) -> fastapi.Response:
